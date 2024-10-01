@@ -1,179 +1,131 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
-import Image from "next/image";
-import ButtonSignin from "./ButtonSignin";
-import logo from "@/app/icon.png";
-import config from "@/config";
+import { useState, useEffect } from 'react';
+import { Menu, Bookmark, BookOpen } from 'lucide-react';
+import { createClient } from '@/libs/supabase/client';
 
-const links = [
-  {
-    href: "/#pricing",
-    label: "Pricing",
-  },
-  {
-    href: "/#testimonials",
-    label: "Reviews",
-  },
-  {
-    href: "/#faq",
-    label: "FAQ",
-  },
-];
+// A sample Header component
+export default function Header() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProButtonClicked, setIsProButtonClicked] = useState(false);
+  const [isBookmarkClicked, setIsBookmarkClicked] = useState(false);
+  const [user, setUser] = useState(null);
 
-const cta = <ButtonSignin extraStyle="btn-primary" />;
+  // Initialize Supabase client
+  const supabase = createClient();
 
-// A header with a logo on the left, links in the center (like Pricing, etc...), and a CTA (like Get Started or Login) on the right.
-// The header is responsive, and on mobile, the links are hidden behind a burger button.
-const Header = () => {
-  const searchParams = useSearchParams();
-  const [isOpen, setIsOpen] = useState(false);
-
-  // setIsOpen(false) when the route changes (i.e: when the user clicks on a link on mobile)
   useEffect(() => {
-    setIsOpen(false);
-  }, [searchParams]);
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    fetchUser();
+  }, [supabase]);
 
   return (
-    <header className="bg-base-200">
-      <nav
-        className="container flex items-center justify-between px-8 py-4 mx-auto"
-        aria-label="Global"
-      >
-        {/* Your logo/name on large screens */}
-        <div className="flex lg:flex-1">
-          <Link
-            className="flex items-center gap-2 shrink-0 "
-            href="/"
-            title={`${config.appName} hompage`}
-          >
-            <Image
-              src={logo}
-              alt={`${config.appName} logo`}
-              className="w-8"
-              placeholder="blur"
-              priority={true}
-              width={32}
-              height={32}
-            />
-            <span className="font-extrabold text-lg">{config.appName}</span>
-          </Link>
+    <nav className="bg-[#FCFCF9] shadow-md" style={{ height: '80px' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex justify-between">
+        
+        {/* Logo Section */}
+        <div className="flex items-center">
+          <div className="flex-shrink-0">
+            <div className="bg-black text-white font-bold py-2 px-4 rounded-full text-xl">
+              DrKard
+            </div>
+          </div>
+
+          {/* Navigation Links */}
+          <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <a href="#" className="border-transparent text-[#5f7d95] hover:border-[#14343B] hover:text-[#14343B] inline-flex items-center px-1 pt-1 border-b-2 text-lg font-medium">iOS</a>
+            <a href="#" className="border-transparent text-[#5f7d95] hover:border-[#14343B] hover:text-[#14343B] inline-flex items-center px-1 pt-1 border-b-2 text-lg font-medium">Android</a>
+            <a href="#" className="border-transparent text-[#5f7d95] hover:border-[#14343B] hover:text-[#14343B] inline-flex items-center px-1 pt-1 border-b-2 text-lg font-medium">Web</a>
+          </div>
         </div>
-        {/* Burger button to open menu on mobile */}
-        <div className="flex lg:hidden">
+
+        {/* Right Section: Icons and Profile */}
+        <div className="flex items-center">
           <button
             type="button"
-            className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5"
-            onClick={() => setIsOpen(true)}
+            className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#14343B]"
+            onClick={() => setIsBookmarkClicked(!isBookmarkClicked)}
           >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6 text-base-content"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            <Bookmark
+              className={`h-6 w-6 ${isBookmarkClicked ? 'fill-current text-black' : ''}`}
+              aria-hidden="true"
+            />
+          </button>
+          
+          <button type="button" className="ml-3 p-1 rounded-full text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#14343B]">
+            <BookOpen className="h-6 w-6" aria-hidden="true" />
+          </button>
+
+          <button
+            onClick={() => setIsProButtonClicked(!isProButtonClicked)}
+            className={`ml-3 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+              isProButtonClicked ? 'bg-[#22808D]' : 'bg-[#22808D] hover:bg-[#1A616F]'
+            } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1A616F]`}
+          >
+            Get Pro
+          </button>
+
+          {/* Profile Image */}
+          <div className="ml-3 relative">
+            {user?.user_metadata?.avatar_url ? (
+              <img
+                src={user.user_metadata.avatar_url}
+                alt="User profile"
+                className="h-10 w-10 rounded-full"
+                referrerPolicy="no-referrer"
               />
-            </svg>
+            ) : (
+              <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
+                {user?.email?.charAt(0)}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Mobile Menu Button */}
+        <div className="-mr-2 flex items-center sm:hidden">
+          <button
+            type="button"
+            className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#14343B]"
+            aria-controls="mobile-menu"
+            aria-expanded="false"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+          >
+            <Menu className="block h-6 w-6" aria-hidden="true" />
           </button>
         </div>
-
-        {/* Your links on large screens */}
-        <div className="hidden lg:flex lg:justify-center lg:gap-12 lg:items-center">
-          {links.map((link) => (
-            <Link
-              href={link.href}
-              key={link.href}
-              className="link link-hover"
-              title={link.label}
-            >
-              {link.label}
-            </Link>
-          ))}
-        </div>
-
-        {/* CTA on large screens */}
-        <div className="hidden lg:flex lg:justify-end lg:flex-1">{cta}</div>
-      </nav>
-
-      {/* Mobile menu, show/hide based on menu state. */}
-      <div className={`relative z-50 ${isOpen ? "" : "hidden"}`}>
-        <div
-          className={`fixed inset-y-0 right-0 z-10 w-full px-8 py-4 overflow-y-auto bg-base-200 sm:max-w-sm sm:ring-1 sm:ring-neutral/10 transform origin-right transition ease-in-out duration-300`}
-        >
-          {/* Your logo/name on small screens */}
-          <div className="flex items-center justify-between">
-            <Link
-              className="flex items-center gap-2 shrink-0 "
-              title={`${config.appName} hompage`}
-              href="/"
-            >
-              <Image
-                src={logo}
-                alt={`${config.appName} logo`}
-                className="w-8"
-                placeholder="blur"
-                priority={true}
-                width={32}
-                height={32}
-              />
-              <span className="font-extrabold text-lg">{config.appName}</span>
-            </Link>
-            <button
-              type="button"
-              className="-m-2.5 rounded-md p-2.5"
-              onClick={() => setIsOpen(false)}
-            >
-              <span className="sr-only">Close menu</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          {/* Your links on small screens */}
-          <div className="flow-root mt-6">
-            <div className="py-4">
-              <div className="flex flex-col gap-y-4 items-start">
-                {links.map((link) => (
-                  <Link
-                    href={link.href}
-                    key={link.href}
-                    className="link link-hover"
-                    title={link.label}
-                  >
-                    {link.label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-            <div className="divider"></div>
-            {/* Your CTA on small screens */}
-            <div className="flex flex-col">{cta}</div>
-          </div>
-        </div>
       </div>
-    </header>
-  );
-};
 
-export default Header;
+      {/* Mobile Menu */}
+      {isMenuOpen && (
+        <div className="sm:hidden" id="mobile-menu">
+          <div className="pt-2 pb-3 space-y-1">
+            <a href="#" className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">iOS</a>
+            <a href="#" className="border-transparent text-[#5f7d95] hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Android</a>
+            <a href="#" className="border-transparent text-[#5f7d95] hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium">Web</a>
+          </div>
+          <div className="pt-4 pb-3 border-t border-gray-200">
+            <div className="flex items-center px-4">
+              {user?.user_metadata?.avatar_url ? (
+                <img
+                  src={user.user_metadata.avatar_url}
+                  alt="User profile"
+                  className="h-10 w-10 rounded-full"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
+                  {user?.email?.charAt(0)}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+}
